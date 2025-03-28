@@ -9,6 +9,7 @@ import {
 import { logRequest } from "./utils/logging";
 import { sendSuccessResponse } from "./utils/responseTemplates";
 import queryRouter from "./routes/query";
+import { initializeDatabase } from "./db/db";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -48,6 +49,9 @@ const PORT = process.env.PORT;
 if (PORT === undefined) {
     throw new Error("Server Port is undefined");
 }
+
+// Initialize the database
+initializeDatabase();
 
 // Start the server on the specified port
 server.listen(PORT, () => {

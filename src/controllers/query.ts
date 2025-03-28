@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import { llmClient, llmModelName } from "../llm/client";
-import { sendSuccessResponse } from "../utils/responseTemplates";
+import {
+    sendServerSideError,
+    sendSuccessResponse,
+} from "../utils/responseTemplates";
+import { databaseSchemaDescription, db } from "../db/db";
 
 /**
  * Handles incoming requests to translate natural language queries into SQL queries.
@@ -16,7 +20,6 @@ export const queryHandler = async (
     try {
         // Extract the query from the request body
         const { query }: { query: string } = req.body;
-
         // Send the query to the language model client to get the SQL translation
         const llmResponse = await llmClient.chat.completions.create({
             messages: [
@@ -24,7 +27,11 @@ export const queryHandler = async (
                     role: "system",
                     content: `You are an AI that translates natural language queries into SQL queries. 
                     Ensure the SQL output is properly structured.
-                    Only return the SQL query, no new lines or code segments or special characters.`,
+                    Only return the SQL query, no new lines or code segments or special characters.
+                    The Database is a sqlite database. 
+                    Note that the query should be in a format that it can be directly fed as input 
+                    as an sql query without any additional formatting.
+                    ${databaseSchemaDescription}`,
                 },
                 {
                     role: "user",
@@ -38,18 +45,39 @@ export const queryHandler = async (
         });
 
         // Extract the generated SQL query from the language model response
-        const responseMessage = llmResponse.choices[0].message.content;
+        const sqlQuery = llmResponse.choices[0].message.content;
+
+        if (!sqlQuery) {
+            return sendServerSideError(
+                req,
+                res,
+                "Failed to generate SQL query"
+            );
+        }
+
+        // Execute the SQL query
+        db.all(sqlQuery, [], (err, rows) => {
+            if (err) {
+                console.error(err);
+                return sendServerSideError(
+                    req,
+                    res,
+                    "Failed to execute SQL query"
+                );
+            }
+            return sendSuccessResponse(
+                req,
+                res,
+                "Query translated successfully to SQL!",
+                200,
+                {
+                    sqlQuery,
+                    rows,
+                }
+            );
+        });
 
         // Send a success response with the translated SQL query
-        return sendSuccessResponse(
-            req,
-            res,
-            "Query translated successfully to SQL!",
-            200,
-            {
-                sqlQuery: responseMessage,
-            }
-        );
     } catch (err) {
         // Pass any errors to the next middleware for handling
         next(err);

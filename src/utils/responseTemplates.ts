@@ -21,18 +21,25 @@ export const sendClientSideError = (
 
 /**
  * Sends a response to the client indicating that a server-side error has occurred.
- * @param req The Request object.
- * @param res The Response object.
- * @param statusCode The HTTP status code to send. Defaults to 500.
+ * Logs the error response details and sends a JSON response with an error message.
+ *
+ * @param req - The Request object.
+ * @param res - The Response object.
+ * @param err - The error message to send. Defaults to "Server Side Error".
+ * @param statusCode - The HTTP status code to send. Defaults to 500.
  * @returns The Response object.
  */
 export const sendServerSideError = (
     req: Request,
     res: Response,
+    err: string = "Server Side Error",
     statusCode: number = 500
 ) => {
+    // Log the error response details
     logResponse(req, "Server Side Error", statusCode);
-    return res.status(statusCode).json({ error: "Server Side Error" });
+
+    // Send the error response to the client
+    return res.status(statusCode).json({ error: err });
 };
 
 /**

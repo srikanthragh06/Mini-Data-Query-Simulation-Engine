@@ -20,6 +20,7 @@ export const queryHandler = async (
     try {
         // Extract the query from the request body
         const { query }: { query: string } = req.body;
+
         // Send the query to the language model client to get the SQL translation
         const llmResponse = await llmClient.chat.completions.create({
             messages: [
@@ -55,29 +56,22 @@ export const queryHandler = async (
             );
         }
 
-        // Execute the SQL query
-        db.all(sqlQuery, [], (err, rows) => {
-            if (err) {
-                console.error(err);
-                return sendServerSideError(
-                    req,
-                    res,
-                    "Failed to execute SQL query"
-                );
-            }
+        try {
+            // Execute the generated SQL query on the database
+            const rows = await db.all(sqlQuery);
+
             return sendSuccessResponse(
                 req,
                 res,
-                "Query translated successfully to SQL!",
+                "Query translated and executed successfully!",
                 200,
-                {
-                    sqlQuery,
-                    rows,
-                }
+                { sqlQuery, rows }
             );
-        });
-
-        // Send a success response with the translated SQL query
+        } catch (err) {
+            // If there is an error executing the SQL query, send a 500 error response
+            console.error("SQL Execution Error:", err);
+            return sendServerSideError(req, res, "Failed to execute SQL query");
+        }
     } catch (err) {
         // Pass any errors to the next middleware for handling
         next(err);

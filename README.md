@@ -1,7 +1,7 @@
 # Mini-Data-Query-Simulation-Engine
 
 ## Overview
-This project is designed for the Growth Gear Backend Engineering Intern Challenge, built in TypeScript using Express. It converts simple natural language queries into SQL queries, making it easier to retrieve data without knowing SQL.
+This project is designed for the Growth Gear Backend Engineering Intern Challenge, built in Node JS using Express. It converts simple natural language queries into SQL queries, making it easier to retrieve data without knowing SQL.
 
 The application utilizes OpenAI GPT-4 Mini as its Large Language Model (LLM) to generate SQL queries and explanations, ensuring accurate and efficient query conversion. Extensive error handling has been implemented to manage various edge cases, including:
 

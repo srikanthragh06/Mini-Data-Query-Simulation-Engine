@@ -130,3 +130,148 @@ The backend server is deployed on https://mini-data-query-simulation-engine-wvei
 
 ## API Documentation
 
+This API provides endpoints to translate natural language queries into SQL, validate queries against a database schema, and generate explanations for how queries are converted.
+
+### Base URL
+
+All endpoints are relative to the base URL of your API.
+
+### Endpoints
+
+#### 1. Execute Query
+
+Validates, translates, and executes a natural language query.
+
+**Endpoint:** `POST /query`
+
+**Request Body:**
+```json
+{
+  "query": "string"  // Natural language query to translate and execute
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Query translated and executed successfully!",
+  "sqlQuery": "SELECT * FROM products WHERE category_id = (SELECT id FROM categories WHERE name = 'Clothing') ORDER BY price ASC LIMIT 1",
+  "rows": [
+    {
+      "id": 7,
+      "name": "T-Shirt",
+      "category_id": 3,
+      "price": 25
+    }
+  ],
+  "explanation": "The query selects all columns from the 'products' table where the category matches 'Clothing'. A subquery retrieves the category ID for 'Clothing', and the results are ordered by price in ascending order, with a limit of 1 to get the product with the lowest price."
+}
+```
+
+**Error Responses:**
+
+* 400 Bad Request - Invalid query:
+```json
+{
+  "error": "string"
+}
+```
+
+* 500 Server Error:
+```json
+{
+  "error": "string"
+}
+```
+
+#### 2. Validate Query
+
+Validates a natural language query without executing it.
+
+**Endpoint:** `POST /validate`
+
+**Request Body:**
+```json
+{
+  "query": "string"  // Natural language query to validate
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Validation of query successful!",
+  "justification": "The query is a meaningful request for data as it seeks to retrieve specific information about a product based on its price within a certain category. Additionally, it aligns with the schema as it involves the \"products\" table (which contains product-related data) and implies a relation to the \"categories\" table for filtering by category."
+}
+```
+
+**Error Responses:**
+
+* 400 Bad Request:
+```json
+{
+  "error": "string"
+}
+```
+
+* 500 Server Error:
+```json
+{
+  "error": "string"
+}
+```
+
+#### 3. Explain Query
+
+Validates a query and returns the generated SQL with an explanation, without executing it.
+
+**Endpoint:** `POST /explain`
+
+**Request Body:**
+```json
+{
+  "query": "string"  // Natural language query to explain
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Explanation generated successfully!",
+  "sqlQuery": "SELECT * FROM products WHERE category_id = (SELECT id FROM categories WHERE name = 'Clothing') ORDER BY price ASC LIMIT 1",
+  "explanation": "The query selects all columns from the 'products' table where the category matches 'Clothing'. A subquery retrieves the category ID for 'Clothing', and the results are ordered by price in ascending order to find the lowest price product. The LIMIT 1 clause ensures only the product with the lowest price is returned."
+}
+```
+
+**Error Responses:**
+
+* 400 Bad Request:
+```json
+{
+  "error": "string"
+}
+```
+
+* 500 Server Error:
+```json
+{
+  "error": "string"
+}
+```
+
+### Validation Process
+
+All endpoints validate queries through the following checks:
+- **Meaningful Data Request**: Ensures the query is a valid natural language request for retrieving data.
+- **Schema Alignment**: Ensures the query aligns with the database schema.
+
+### Security Measures
+
+The API implements security measures to prevent potentially destructive operations:
+- Blocks queries containing `DROP TABLE`, `DELETE FROM`, `ALTER TABLE`, or `UPDATE SET`
+
+### Error Handling
+
+The API returns appropriate HTTP status codes and error messages:
+- 400 for client errors (invalid queries, format issues)
+- 500 for server errors (LLM issues, database failures)

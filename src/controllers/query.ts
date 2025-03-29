@@ -48,7 +48,9 @@ const validateQuery = async (
                     **Response Format:**  
                     - The first word must be ‘yes’ if the query is valid, otherwise ‘no’.  
                     - The second word must be ‘yes’ if the query aligns with the schema, otherwise ‘no’.  
-                    - After these two words, provide a justification.
+                    - After these two words, provide a justification. Avoid using \ in your response, 
+                    just plain text.
+                    - Do not include any other text or formatting.
                     
                     The Database is a SQLite database.
                     ${databaseSchemaPrompt}

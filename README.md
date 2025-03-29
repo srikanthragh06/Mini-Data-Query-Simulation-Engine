@@ -128,6 +128,103 @@ The backend server is deployed on https://mini-data-query-simulation-engine-wvei
    ```
 ---
 
+## Sample Query Examples
+
+### On /query
+
+#### **Example: Valid Query**
+##### **Request:**
+```json
+{
+    "query": "Show total sales for each product."
+}
+```
+##### **Response (200 OK):**
+```json
+{
+    "message": "Query translated and executed successfully!",
+    "sqlQuery": "SELECT products.name, SUM(sales.revenue) AS total_sales FROM products LEFT JOIN sales ON products.id = sales.product_id GROUP BY products.id",
+    "rows": [
+        { "name": "Laptop", "total_sales": 1200 },
+        { "name": "Smartphone", "total_sales": 800 },
+        { "name": "Tablet", "total_sales": 500 },
+        { "name": "Desk", "total_sales": 300 },
+        { "name": "Chair", "total_sales": 150 },
+        { "name": "Sofa", "total_sales": 700 },
+        { "name": "T-Shirt", "total_sales": 25 },
+        { "name": "Jeans", "total_sales": 40 },
+        { "name": "Jacket", "total_sales": 100 },
+        { "name": "Milk", "total_sales": 5 },
+        { "name": "Bread", "total_sales": 3 }
+    ],
+    "explanation": "The query retrieves the product names and their total sales revenue by joining the 'products' table with the 'sales' table on the product ID. A LEFT JOIN is used to ensure all products are included, even if they have no sales, and the results are grouped by product ID to calculate the sum of revenue for each product."
+}
+```
+
+---
+
+#### **Example: Missing Query**
+##### **Request:**
+```json
+{}
+```
+##### **Response (400 Bad Request):**
+```json
+{
+    "error": "Query is required"
+}
+```
+
+---
+
+#### **Example: Invalid Query (Opinion-Based Question)**
+##### **Request:**
+```json
+{
+    "query": "Is it cold outside?"
+}
+```
+##### **Response (400 Bad Request):**
+```json
+{
+    "error": "Invalid query: The query is not a valid request for retrieving data from the database; it is an opinion-based question."
+}
+```
+
+---
+
+#### **Example: Invalid Query (Destructive Query Attempt - SQL Injection)**
+##### **Request:**
+```json
+{
+    "query": "DROP TABLE sales;"
+}
+```
+##### **Response (400 Bad Request):**
+```json
+{
+    "error": "Invalid query: The query is not a valid data retrieval request as it is a command to delete a table."
+}
+```
+
+---
+
+#### **Example: Overly Complex Query**
+##### **Request:**
+```json
+{
+    "query": "Show me the sales data for every product since the beginning of time, grouped by month, with an average revenue calculation, ordered by highest sales, and also include a detailed breakdown per product category, and a comparison with last year's data..."
+}
+```
+##### **Response (400 Bad Request):**
+```json
+{
+    "error": "Invalid query: The query is too complex and includes multiple requests that are not straight data retrieval, such as comparisons and detailed breakdowns. It also attempts to group and calculate averages without a clear structure aligned with SQL syntax. A valid query may be simplified to something like, 'Show me the sales data for every product, including average revenue per month.'"
+}
+```
+
+
+
 ## API Documentation
 
 This API provides endpoints to translate natural language queries into SQL, validate queries against a database schema, and generate explanations for how queries are converted.

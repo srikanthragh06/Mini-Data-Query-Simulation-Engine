@@ -77,7 +77,7 @@ const validateQuery = async (
         max_tokens: 1000,
         model: llmModelName,
     });
-    console.log(llmValidationMessage);
+
     if (
         !llmValidationMessage.choices ||
         llmValidationMessage.choices.length === 0
@@ -254,6 +254,66 @@ export const queryHandler = async (
             console.error("SQL Execution Error:", err);
             return sendServerSideError(req, res, "Failed to execute SQL query");
         }
+    } catch (err) {
+        // Pass any errors to the next middleware for handling
+        next(err);
+    }
+};
+
+/**
+ * Handles requests to validate a query.
+ * @param req The Request object.
+ * @param res The Response object.
+ * @param next The NextFunction.
+ */
+export const validateHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { query }: { query: string } = req.body;
+
+        // Validate the query using the LLM
+        const validationResult = await validateQuery(query);
+
+        // If the query is rate limited, send a 429 error response
+        if (validationResult.isRateLimited) {
+            return sendClientSideError(
+                req,
+                res,
+                validationResult.justification
+            );
+        }
+
+        // If the query is invalid, send a 400 error response
+        if (!validationResult.isValid) {
+            return sendClientSideError(
+                req,
+                res,
+                `Invalid query: ${validationResult.justification}`
+            );
+        }
+
+        // If the query is not aligned with the database schema, send a 400 error response
+        if (!validationResult.isAligned) {
+            return sendClientSideError(
+                req,
+                res,
+                `Invalid query: ${validationResult.justification}`
+            );
+        }
+
+        // If the query is valid, send a 200 success response
+        return sendSuccessResponse(
+            req,
+            res,
+            "Validation of query successful!",
+            200,
+            {
+                justification: validationResult.justification,
+            }
+        );
     } catch (err) {
         // Pass any errors to the next middleware for handling
         next(err);

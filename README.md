@@ -118,9 +118,9 @@ The backend server is deployed on https://mini-data-query-simulation-engine-wvei
    ```
 
 4. **Create the dummy sqlite file**
-```
-npm run createDB
-```
+   ```
+   npm run createDB
+   ```
 
 5. **Start the server:**
    ```sh

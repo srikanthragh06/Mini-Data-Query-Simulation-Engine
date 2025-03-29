@@ -1,11 +1,17 @@
 import Router from "express";
-import { queryValidation, validateValidation } from "../middlewares/query";
-import { queryHandler, validateHandler } from "../controllers/query";
+import { queryValidation } from "../middlewares/query";
+import {
+    explainHandler,
+    queryHandler,
+    validateHandler,
+} from "../controllers/query";
 
 const router = Router();
 
 router.post("/query", queryValidation, queryHandler);
 
-router.post("/validate", validateValidation, validateHandler);
+router.post("/validate", queryValidation, validateHandler);
+
+router.post("/explain", queryValidation, explainHandler);
 
 export default router;

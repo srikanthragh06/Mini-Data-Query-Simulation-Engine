@@ -157,7 +157,8 @@ export const queryHandler = async (
                     4. **SQL Query Formatting:**  
                        - The query must be written as a single line with no special characters or extra formatting.  
                        - Ensure the query can be executed directly in a SQLite database without modification, 
-                       avoid unnecessary special characters, please.  
+                       avoid unnecessary special characters, please. 
+                       - Don't put the SQL query inside ' ' or any other characters.    
 
                     **Explanation Guidelines:**  
                     - Clearly describe how each part of the SQL query maps to the natural language request.  

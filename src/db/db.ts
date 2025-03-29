@@ -42,11 +42,11 @@ The SQLite database consists of three tables: categories, products, and sales.
 
 1. categories:
    - id (INTEGER, PRIMARY KEY, AUTOINCREMENT) → Unique identifier for each category.
-   - name (TEXT, UNIQUE, NOT NULL) → Name of the category (e.g., Electronics, Furniture).
+   - name (TEXT, UNIQUE, NOT NULL) → Name of the category.
 
 2. products:
    - id (INTEGER, PRIMARY KEY, AUTOINCREMENT) → Unique identifier for each product.
-   - name (TEXT, UNIQUE, NOT NULL) → Name of the product (e.g., Laptop, Chair).
+   - name (TEXT, UNIQUE, NOT NULL) → Name of the product.
    - category_id (INTEGER, FOREIGN KEY) → References categories(id), associating each product with a category.
    - price (REAL) → Price of the product.
 

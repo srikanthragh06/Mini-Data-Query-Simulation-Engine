@@ -6,7 +6,8 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "nodemon",
         "build": "tsc",
-        "start": "node dist/main.js"
+        "start": "node dist/main.js",
+        "createDB": "ts-node src/initializeDB.ts"
     },
     "keywords": [],
     "author": "",

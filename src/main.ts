@@ -9,7 +9,7 @@ import {
 import { logRequest } from "./utils/logging";
 import { sendSuccessResponse } from "./utils/responseTemplates";
 import queryRouter from "./routes/query";
-import { initializeDatabase } from "./db/db";
+import { openDB } from "./db/db";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -44,16 +44,12 @@ app.use("/*", urlNotFoundHandler);
 // Global error handler middleware
 app.use(globalErrorHandler);
 
-// Define the server port from environment variables
-const PORT = process.env.PORT;
-if (PORT === undefined) {
-    throw new Error("Server Port is undefined");
-}
-
-// Initialize the database
-initializeDatabase();
-
 // Start the server on the specified port
-server.listen(PORT, () => {
+const PORT = 4000;
+server.listen(PORT, async () => {
     console.log(`Server started successfully on PORT:${PORT}`);
+
+    // Open the database
+    await openDB();
+    console.log("Database connection opened successfully");
 });

@@ -5,8 +5,8 @@ import {
     sendServerSideError,
     sendSuccessResponse,
 } from "../utils/responseTemplates";
-import { databaseSchemaDescription, db } from "../db/db";
 import { ChatCompletion } from "openai/resources/chat";
+import { databaseSchemaPrompt, db } from "../db/db";
 
 /**
  * Validates a natural language query before conversion to SQL.
@@ -51,7 +51,7 @@ const validateQuery = async (
                     - After these two words, provide a justification.
                     
                     The Database is a SQLite database.
-                    ${databaseSchemaDescription}
+                    ${databaseSchemaPrompt}
                     
                     Additional Considerations:
                     - Normalize minor grammatical errors before validation.
@@ -169,7 +169,7 @@ export const queryHandler = async (
                     'SELECT * FROM products WHERE category_id = (SELECT id FROM categories WHERE name = 'Electronics') ORDER BY price ASC; The query selects all columns from the 'products' table where the category matches 'Electronics'. A subquery is used to retrieve the category ID. The results are sorted in ascending order by price.'  
 
                     The Database is a SQLite database.  
-                    ${databaseSchemaDescription}`,
+                    ${databaseSchemaPrompt}`,
                 },
                 {
                     role: "user",
@@ -340,7 +340,7 @@ export const explainHandler = async (
                     'SELECT * FROM products WHERE category_id = (SELECT id FROM categories WHERE name = 'Electronics') ORDER BY price ASC; The query selects all columns from the 'products' table where the category matches 'Electronics'. A subquery is used to retrieve the category ID. The results are sorted in ascending order by price.'  
 
                     The Database is a SQLite database.  
-                    ${databaseSchemaDescription}`,
+                    ${databaseSchemaPrompt}`,
                 },
                 {
                     role: "user",

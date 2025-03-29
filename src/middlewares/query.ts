@@ -9,6 +9,8 @@ export const queryValidation = [
      */
     body("query")
         .trim()
+        .isString()
+        .withMessage("Query must be a string")
         .exists({ checkFalsy: true })
         .withMessage("Query is required")
         .isLength({ max: 500 })

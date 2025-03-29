@@ -132,11 +132,4 @@ The SQLite database consists of three tables: categories, products, and sales.
    - revenue (REAL) → Revenue generated from the sale.
    - quantity_sold (INTEGER) → Number of units sold.
    - sale_date (TEXT) → Date of the sale (YYYY-MM-DD format).
-
-The database is initialized with sample data:
-- Categories include 'Electronics', 'Furniture', 'Clothing', and 'Grocery'.
-- Products belong to these categories, such as 'Laptop' ($1200, Electronics) and 'Chair' ($150, Furniture).
-- Sales records track product sales, including quantity sold, revenue, and sale date.
-
-The database ensures uniqueness for categories and products. Foreign key constraints maintain data integrity between tables.
 `;

@@ -8,6 +8,7 @@ export const queryValidation = [
      * The query parameter is required and must be a maximum of 500 characters.
      */
     body("query")
+        .trim()
         .exists({ checkFalsy: true })
         .withMessage("Query is required")
         .isLength({ max: 500 })

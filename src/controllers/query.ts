@@ -160,61 +160,53 @@ export const queryHandler = async (
             );
         }
 
-        let llmResponse: ChatCompletion & {
-            _request_id?: string | null;
-        };
+        // Send the query to the language model client to get the SQL translation
+        const llmResponse = await llmClient.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content: `You are an AI that translates natural language queries into SQL queries.  
 
-        try {
-            // Send the query to the language model client to get the SQL translation
-            llmResponse = await llmClient.chat.completions.create({
-                messages: [
-                    {
-                        role: "system",
-                        content: `You are an AI that translates natural language queries into SQL queries.
-                        Ensure the SQL output is properly structured.
-                        Only return the SQL query, no new lines or code segments or special characters.
-                        The Database is a sqlite database.
-                        Note that the query should be in a format that it can be directly fed as input
-                        as an sql query without any additional formatting.
-                        ${databaseSchemaDescription}`,
-                    },
-                    {
-                        role: "user",
-                        content: `Convert this into SQL: "${query}"`,
-                    },
-                ],
-                // Sampling temperature for randomness
-                temperature: 1.0,
-                // Nucleus sampling parameter
-                top_p: 1.0,
-                // Maximum tokens in the generated response
-                max_tokens: 1000,
-                // Model name to use for the completion
-                model: llmModelName,
-            });
-        } catch (err: any) {
-            if (err.response?.status === 429) {
-                // If the request is rate limited, send a 429 error response
-                return sendServerSideError(
-                    req,
-                    res,
-                    "Rate limit exceeded. Please try again later."
-                );
-            }
+                    Requirements:  
+                    1. Ensure the SQL output is correctly structured and adheres to SQLite syntax.  
+                    2. Return only the SQL query and an explanation of how the natural language query was converted.  
+                    3. Format: The SQL query and explanation must be separated by a semicolon ('; ').  
+                    4. SQL Query Formatting:  
+                    - The query must be written as a single line with no special characters or extra formatting.  
+                    - Ensure the query can be executed directly in a SQLite database without modification.  
 
-            // If there is an error generating the SQL query, send a 500 error response
-            console.error(err);
-            return sendServerSideError(
-                req,
-                res,
-                "Failed to generate SQL query"
-            );
-        }
+                    Explanation Guidelines:  
+                    - Clearly describe how each part of the SQL query maps to the natural language request.  
+                    - If assumptions are made (e.g., handling ambiguous terms), explain them.  
+                    - If filtering, grouping, or ordering is applied, describe why.  
+
+                    Example Output Format:  
+                    Input: 'Show me all products in the Electronics category ordered by price.'  
+                    Output:  
+                    'SELECT * FROM products WHERE category_id = (SELECT id FROM categories WHERE name = 'Electronics') ORDER BY price ASC; The query selects all columns from the 'products' table where the category matches 'Electronics'. A subquery is used to retrieve the category ID. The results are sorted in ascending order by price.'  
+
+                    The Database is a SQLite database.  
+                    ${databaseSchemaDescription}`,
+                },
+                {
+                    role: "user",
+                    content: `Convert this into SQL: "${query}"`,
+                },
+            ],
+            // Sampling temperature for randomness
+            temperature: 1.0,
+            // Nucleus sampling parameter
+            top_p: 1.0,
+            // Maximum tokens in the generated response
+            max_tokens: 1000,
+            // Model name to use for the completion
+            model: llmModelName,
+        });
 
         // Extract the generated SQL query from the language model response
-        const sqlQuery = llmResponse.choices[0].message.content;
+        const responseMessage = llmResponse.choices[0].message.content;
 
-        if (!sqlQuery) {
+        if (!responseMessage) {
             // If the generated SQL query is empty, send a 500 error response
             return sendServerSideError(
                 req,
@@ -222,6 +214,8 @@ export const queryHandler = async (
                 "Failed to generate SQL query"
             );
         }
+
+        const [sqlQuery, explanation] = responseMessage.split("; ");
 
         // Prevent potentially harmful queries
         if (
@@ -247,7 +241,7 @@ export const queryHandler = async (
                 res,
                 "Query translated and executed successfully!",
                 200,
-                { sqlQuery, rows }
+                { sqlQuery, rows, explanation }
             );
         } catch (err) {
             // If there is an error executing the SQL query, send a 500 error response
